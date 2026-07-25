@@ -24,7 +24,7 @@ export function App() {
     setUploadStatus(null);
 
     try {
-      const res = await fetch('http://localhost:8000/research', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/research`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
@@ -70,7 +70,7 @@ export function App() {
 
     setUploadStatus('Uploading & Indexing PDF...');
     try {
-      const res = await fetch('http://localhost:8000/documents/upload', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/documents/upload`, {
         method: 'POST',
         body: formData,
       });

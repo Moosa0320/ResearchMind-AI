@@ -33,8 +33,11 @@ export function useResearchSocket(sessionId: string | null) {
     setIsCompleted(false);
     setIsStopped(false);
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//localhost:8000/ws/${sessionId}`;
+    const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const apiHost = rawApiUrl.replace(/^https?:\/\//, '');
+    const isHttps = rawApiUrl.startsWith('https:');
+    const wsProtocol = isHttps ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${apiHost}/ws/${sessionId}`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 

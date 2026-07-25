@@ -21,7 +21,8 @@ export const ReportView: React.FC<ReportViewProps> = ({ report, citations, sessi
 
   const handleExport = (format: 'md' | 'pdf' | 'docx') => {
     if (!sessionId) return;
-    window.open(`http://localhost:8000/export/${sessionId}?format=${format}`, '_blank');
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    window.open(`${baseUrl}/export/${sessionId}?format=${format}`, '_blank');
   };
 
   return (
