@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/research",
+      "dest": "api/index.py"
+    },
+    {
+      "src": "/stream/(.*)",
+      "dest": "api/index.py"
+    },
+    {
+      "src": "/transcribe",
+      "dest": "api/index.py"
+    },
+    {
+      "src": "/export/(.*)",
+      "dest": "api/index.py"
+    },
+    {
+      "src": "/documents/upload",
+      "dest": "api/index.py"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "frontend/$1"
+    }
+  ]
+}

@@ -106,6 +106,64 @@ async def websocket_research(websocket: WebSocket, session_id: str):
         if session_id in active_connections:
             del active_connections[session_id]
 
+from fastapi.responses import StreamingResponse
+
+@app.get("/stream/{session_id}")
+async def sse_research(session_id: str):
+    """Server-Sent Events (SSE) streaming fallback for serverless deployments (Vercel)."""
+    session_data = session_reports.get(session_id, {"query": "Generative AI Agents"})
+    query = session_data.get("query", "Generative AI Agents")
+
+    initial_state = {
+        "query": query,
+        "session_id": session_id,
+        "subtasks": [],
+        "research_notes": [],
+        "verified_notes": [],
+        "outline": [],
+        "draft_report": "",
+        "final_report": "",
+        "citations": [],
+        "confidence_score": 1.0,
+        "retry_count": 0,
+        "status_log": []
+    }
+
+    async def event_generator():
+        try:
+            for output in research_app.stream(initial_state):
+                for node_name, state_update in output.items():
+                    status_log = state_update.get("status_log", [])
+                    latest_event = status_log[-1] if status_log else {"agent": node_name, "status": "completed", "message": f"{node_name} finished."}
+                    
+                    data = json.dumps({
+                        "type": "agent_event",
+                        "agent": node_name,
+                        "event": latest_event,
+                        "confidence_score": state_update.get("confidence_score", 1.0)
+                    })
+                    yield f"data: {data}\n\n"
+                    await asyncio.sleep(0.3)
+
+                    if "final_report" in state_update and state_update["final_report"]:
+                        session_reports[session_id] = {
+                            "query": query,
+                            "status": "completed",
+                            "final_report": state_update["final_report"],
+                            "citations": state_update.get("citations", [])
+                        }
+                        done_data = json.dumps({
+                            "type": "done",
+                            "final_report": state_update["final_report"],
+                            "citations": state_update.get("citations", [])
+                        })
+                        yield f"data: {done_data}\n\n"
+        except Exception as e:
+            err_data = json.dumps({"type": "error", "message": str(e)})
+            yield f"data: {err_data}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
 @app.post("/documents/upload")
 async def upload_pdf(session_id: str = Form(...), file: UploadFile = File(...)):
     if not file.filename.endswith(".pdf"):
