@@ -19,6 +19,7 @@ export function App() {
   const isRunning = !!activeAgent && !isCompleted && !isStopped;
 
   const handleStartResearch = async (query: string) => {
+    setSessionId(null);
     setCurrentQuery(query);
     setIsInitializing(true);
     setUploadStatus(null);

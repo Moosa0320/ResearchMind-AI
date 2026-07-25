@@ -27,7 +27,13 @@ export function useResearchSocket(sessionId: string | null) {
   useEffect(() => {
     if (!sessionId) return;
 
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+
     setEvents([]);
+    setActiveAgent(null);
     setFinalReport(null);
     setCitations([]);
     setIsCompleted(false);
