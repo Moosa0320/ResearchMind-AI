@@ -11,7 +11,7 @@ interface AgentTimelineProps {
 
 const AGENTS = [
   { id: 'planner', label: 'Planner Agent', desc: 'Decomposing query into subtasks & outline' },
-  { id: 'researcher', label: 'Researcher Agent', desc: 'Executing live web search & ChromaDB RAG' },
+  { id: 'researcher', label: 'Researcher Agent', desc: 'Executing Tavily search & ChromaDB RAG' },
   { id: 'fact_checker', label: 'Fact Checker', desc: 'Validating cross-source citation confidence' },
   { id: 'writer', label: 'Writer Agent', desc: 'Synthesizing verified notes into draft' },
   { id: 'reviewer', label: 'Reviewer Agent', desc: 'Formatting markdown output & citations' }
