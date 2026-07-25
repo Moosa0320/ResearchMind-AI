@@ -22,7 +22,7 @@ export function useResearchSocket(sessionId: string | null) {
   const [confidenceScore, setConfidenceScore] = useState<number>(1.0);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [isStopped, setIsStopped] = useState<boolean>(false);
-  const wsRef = useRef<WebSocket | EventSource | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -39,72 +39,39 @@ export function useResearchSocket(sessionId: string | null) {
     setIsCompleted(false);
     setIsStopped(false);
 
-    const rawApiUrl = import.meta.env.VITE_API_URL || '';
-    const isVercel = !import.meta.env.VITE_API_URL || window.location.hostname.includes('vercel.app');
+    const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const apiHost = rawApiUrl.replace(/^https?:\/\//, '');
+    const isHttps = rawApiUrl.startsWith('https:');
+    const wsProtocol = isHttps ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${apiHost}/ws/${sessionId}`;
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
 
-    if (isVercel) {
-      // Use Server-Sent Events (SSE) for Vercel Serverless environment
-      const sseUrl = `${rawApiUrl}/stream/${sessionId}`;
-      const es = new EventSource(sseUrl);
-      wsRef.current = es;
-
-      es.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'agent_event') {
-            setActiveAgent(data.agent);
-            setConfidenceScore(data.confidence_score ?? 1.0);
-            setEvents((prev) => [...prev, data.event]);
-          } else if (data.type === 'done') {
-            setActiveAgent(null);
-            setFinalReport(data.final_report);
-            setCitations(data.citations || []);
-            setIsCompleted(true);
-            es.close();
-          }
-        } catch (err) {
-          console.error('Failed to parse SSE message', err);
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'agent_event') {
+          setActiveAgent(data.agent);
+          setConfidenceScore(data.confidence_score ?? 1.0);
+          setEvents((prev) => [...prev, data.event]);
+        } else if (data.type === 'done') {
+          setActiveAgent(null);
+          setFinalReport(data.final_report);
+          setCitations(data.citations || []);
+          setIsCompleted(true);
         }
-      };
+      } catch (err) {
+        console.error('Failed to parse WS message', err);
+      }
+    };
 
-      es.onerror = () => {
-        es.close();
-      };
+    ws.onerror = (err) => {
+      console.error('WebSocket error:', err);
+    };
 
-      return () => {
-        es.close();
-      };
-    } else {
-      // Standard WebSocket for Localhost
-      const apiHost = rawApiUrl.replace(/^https?:\/\//, '');
-      const isHttps = rawApiUrl.startsWith('https:');
-      const wsProtocol = isHttps ? 'wss:' : 'ws:';
-      const wsUrl = `${wsProtocol}//${apiHost}/ws/${sessionId}`;
-      const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'agent_event') {
-            setActiveAgent(data.agent);
-            setConfidenceScore(data.confidence_score ?? 1.0);
-            setEvents((prev) => [...prev, data.event]);
-          } else if (data.type === 'done') {
-            setActiveAgent(null);
-            setFinalReport(data.final_report);
-            setCitations(data.citations || []);
-            setIsCompleted(true);
-          }
-        } catch (err) {
-          console.error('Failed to parse WS message', err);
-        }
-      };
-
-      return () => {
-        ws.close();
-      };
-    }
+    return () => {
+      ws.close();
+    };
   }, [sessionId]);
 
   const stopResearch = useCallback(() => {
