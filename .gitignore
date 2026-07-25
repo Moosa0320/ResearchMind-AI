@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+.env
+.env.local
+*.egg-info/
+dist/
+build/
+*.log
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# ChromaDB vector store (local data)
+backend/chroma_db/
+chroma_db/
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/build/
+.next/
+.nuxt/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Docker volumes
+*.pid
+
+# Secrets — NEVER commit these
+*.pem
+*.key
+secrets/
