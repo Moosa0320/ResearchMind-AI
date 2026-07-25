@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ArrowRight, ShieldCheck, Cpu, Layers, Sparkles, Mic, MicOff, Loader2 } from 'lucide-react';
+import { ArrowRight, Mic, MicOff, Loader2 } from 'lucide-react';
 
 interface LandingProps {
   onStart: (query: string) => void;
