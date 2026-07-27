@@ -39,11 +39,12 @@ export function useResearchSocket(sessionId: string | null) {
     setIsCompleted(false);
     setIsStopped(false);
 
-    const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    const apiHost = rawApiUrl.replace(/^https?:\/\//, '');
-    const isHttps = rawApiUrl.startsWith('https:');
-    const wsProtocol = isHttps ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${apiHost}/ws/${sessionId}`;
+    const rawApiUrl = (import.meta.env.VITE_API_URL ?? '/api').replace(/\/$/, '');
+    const isAbsolute = /^https?:\/\//.test(rawApiUrl);
+    const origin = isAbsolute ? new URL(rawApiUrl).origin : window.location.origin;
+    const pathname = isAbsolute ? new URL(rawApiUrl).pathname : rawApiUrl;
+    const basePath = pathname === '/' ? '' : pathname;
+    const wsUrl = new URL(`${basePath}/ws/${sessionId}`, origin).toString().replace(/^http/, window.location.protocol === 'https:' ? 'wss' : 'ws');
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 

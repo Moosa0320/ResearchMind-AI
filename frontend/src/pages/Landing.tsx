@@ -52,7 +52,7 @@ export const Landing: React.FC<LandingProps> = ({ onStart }) => {
     formData.append('file', blob, 'recording.webm');
 
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const baseUrl = (import.meta.env.VITE_API_URL ?? '/api').replace(/\/$/, '');
       const res = await fetch(`${baseUrl}/transcribe`, {
         method: 'POST',
         body: formData,

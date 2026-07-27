@@ -18,6 +18,8 @@ export function App() {
 
   const isRunning = !!activeAgent && !isCompleted && !isStopped;
 
+  const apiBaseUrl = (import.meta.env.VITE_API_URL ?? '/api').replace(/\/$/, '');
+
   const handleStartResearch = async (query: string) => {
     setSessionId(null);
     setCurrentQuery(query);
@@ -25,7 +27,7 @@ export function App() {
     setUploadStatus(null);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/research`, {
+      const res = await fetch(`${apiBaseUrl}/research`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
@@ -71,7 +73,7 @@ export function App() {
 
     setUploadStatus('Uploading & Indexing PDF...');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/documents/upload`, {
+      const res = await fetch(`${apiBaseUrl}/documents/upload`, {
         method: 'POST',
         body: formData,
       });
